@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>{{ category|default:"My低能卡" }}</title>
+    {% load static %}
+    <script
+      src="https://kit.fontawesome.com/b61b5c8440.js"
+      crossorigin="anonymous"
+    ></script>
+    <link
+      rel="shortcut icon"
+      href="{% static '/img/dcard-icon.png' %}"
+      type="image/png"
+    />
+    <link rel="stylesheet" href="{% static '/css/style.css' %}" />
+  </head>
+  <body>
+    {% include "component/navbar.html" %}
+    <div class="container">
+      {% include "component/sidebar.html" %} {% load custom_filters %}
+      <main class="main-container">
+        {% if query %}
+        <h1 style="text-align: center">搜尋 - {{ query }}</h1>
+        {% else %}
+        <h1 style="text-align: center">
+          討論區 - {{ category|default:"所有" }}
+        </h1>
+        {% endif %}
+
+        <div class="posts">
+          {% if posts %} {% for post in posts %}
+          <div class="post">
+            <a
+              class="detail"
+              href="{% url 'post_list_by_category' category=post.category %}"
+            >
+              {{ post.get_category_display }} ·
+              {{post.created_at|time_since_custom}}
+            </a>
+            <a href="{% url 'article_post' id=post.id %}">
+              <h2>{{ post.title }}</h2>
+              <p>{{ post.content|truncatewords:20 }}</p>
+            </a>
+          </div>
+          {% endfor %} {% else %}
+          <h1>暫無文章</h1>
+          {% endif %}
+        </div>
+      </main>
+    </div>
+    <script src="{% static '/js/script.js' %}"></script>
+  </body>
+</html>

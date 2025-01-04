@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    {% load static %}
+    <link rel="stylesheet" href="{% static '/css/style.css' %}" />
+    <script
+      src="https://kit.fontawesome.com/b61b5c8440.js"
+      crossorigin="anonymous"
+    ></script>
+    <link
+      rel="shortcut icon"
+      href="{% static '/img/dcard-icon.png' %}"
+      type="image/png"
+    />
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>個人檔案</title>
+  </head>
+  <body>
+    {% if edit %}
+    <div class="popbox">
+      <form method="post" enctype="multipart/form-data">
+        {% csrf_token %} {% load static %}
+        <a href="{% url 'profile'  %}"
+          ><img src="{% static 'img/x-icon.svg' %}" alt=""
+        /></a>
+        <h1>編輯</h1>
+        <div class="user">
+          <label for="avatar">大頭貼</label>
+          <input accept="image/*" type="file" name="avatar" id="avatar" />
+        </div>
+        <div class="user">
+          <label for="username">新名稱</label>
+          <input
+            type="text"
+            id="username"
+            name="username"
+            value="{{user.username}}"
+          />
+        </div>
+        <div class="user">
+          <label for="email">新電子郵件</label>
+          <input type="email" id="email" name="email" value="{{user.email}}" />
+        </div>
+        <div class="user">
+          <label for="password">舊密碼</label>
+          <input type="password" id="password" name="password" value="" />
+        </div>
+        <div class="user">
+          <label for="new_password">新密碼</label>
+          <input
+            type="password"
+            id="new_password"
+            name="new_password"
+            value=""
+          />
+        </div>
+        <div class="user">
+          <label for="comfirm_password">確認新密碼</label>
+          <input
+            type="password"
+            id="comfirm_password"
+            name="comfirm_password"
+            value=""
+          />
+        </div>
+        <div class="check-box">
+          <input type="checkbox" name="" id="show" />
+          <label for="show">顯示密碼</label>
+        </div>
+
+        {% if messages %} {% for message in messages %}
+        <p class="error">{{message}}</p>
+        {% endfor %} {% endif %}
+        <button type="submit">更新</button>
+      </form>
+    </div>
+    {% endif %} {% include 'component/navbar.html' %}
+    <div class="container">
+      <div class="main-container">
+        <div class="profile-container">
+          {% if user.avatar %}
+          <div class="avatar">
+            <img src="{{user.avatar.url}}" alt="avatar" />
+          </div>
+          {% else %}
+          <div class="avatar">{{user.username|slice:":1"}}</div>
+          {% endif %}
+
+          <div class="profile">
+            <p>{{user.username}}</p>
+            <p>{{user.email}}</p>
+
+            <a href="{% url 'profile'  %}?edit=true">更改個人資料</a>
+          </div>
+        </div>
+        <div class="history">
+          <ul class="history-nav">
+            <li>
+              <form action="{% url 'profile'  %}" method="post">
+                {% csrf_token %}
+                <input type="hidden" name="history" value="post" />
+                <button type="submit" class="{% if history == 'post' %} active {% endif %}" >發文歷史</button>
+              </form>
+            </li>
+            <li>
+              <form action="{% url 'profile'  %}" method="post">
+                {% csrf_token %}
+                <input type="hidden" name="history" value="comment"  />
+                <button type="submit" class='{% if history == "comment" %}active{% endif %}' >留言歷史</button>
+              </form>
+            </li>
+          </ul>
+       
+          {% if history_list %} {% load custom_filters %}
+          <div class="posts">
+            {% for history_item in history_list%}
+            <div class="post">
+              {% if history_item.category %}
+              <a
+                class="detail"
+                href="{% url 'post_list_by_category' category=history_item.category %}"
+              >
+                {{ history_item.get_category_display }} ·
+                {{history_item.created_at|time_since_custom}}
+              </a>
+              {% else %}
+              <a
+                class="detail"
+                href="{% url 'post_list_by_category' category=history_item.post.category %}"
+              >
+                {{ history_item.post.get_category_display }} ·
+                {{history_item.post.created_at|time_since_custom}}
+              </a>
+              {% endif %} {% if history_item.post.id %}
+              <a href="{% url 'article_post' id=history_item.post.id %}">
+                {% else %}
+                <a href="{% url 'article_post' id=history_item.id %}">
+                {% endif %} {% if history_item.title %}
+                <h2>{{ history_item.title }}</h2>
+                {% elif history_item.post.title %}
+                <h2>{{ history_item.post.title }}</h2>
+                {% endif %}
+                {% if history_item.post.id %}
+                <p>留言</p>
+                {% endif %}
+                <p style=" {% if history_item.post.id %}font-weight:600;{% endif %}">{{ history_item.content|truncatewords:20 }}</p>
+               
+               
+              </a>
+            </div>
+            {% endfor %} {% endif %}
+          </div>
+        </div>
+      </div>
+    </div>
+    <script src="{% static '/js/script.js' %}"></script>
+  </body>
+</html>
